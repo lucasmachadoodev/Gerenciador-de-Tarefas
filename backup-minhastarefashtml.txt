@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./CSS/style.css">
+    <link rel="stylesheet" href="./CSS/minhas-tarefas.css">
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script src="./script.js"></script>
+    <link rel="icon" href="img/vt.png" sizes="32x32">
+    <title>Minhas Tarefas</title>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <img src="img/logo-visiontec-white.png" alt="Logo Visiontec">
+        </div>
+        <div id="nome-usuario" class="nome-usuario">
+            Olá, <span id="nome-usuario-texto">Visitante</span>!
+        </div>
+        <a href="index.html">
+            <img class="icones" src="img/Home.png" alt="Início" style="width: 18px; height: 18px;">
+        </a>
+        <a href="criar-tarefa.html">
+            <img class="icones" src="img/mais.png" alt="Nova Tarefa" style="width: 18px; height: 18px;">
+        </a>
+        <a href="minhas-tarefas.html">
+            <img class="icones" src="img/tarefa.png" alt="Minhas Tarefas" style="width: 18px; height: 18px;">
+        </a>
+        <a href="dashboard.html">
+            <img class="icones" src="img/Dashboard.png" alt="Dashboard" style="width: 18px; height: 18px;">
+        </a>
+        <div id="notificacao-container" style="position: relative; cursor: pointer;" onclick="mostrarNotificacoes()">
+            <img src="img/sinos.png" alt="Notificações" id="notificacao-icone" style="width: 18px; height: 18px; margin: 0 12px;">
+            <span id="quantidade-notificacoes" style="position: absolute; top: 0; right: 0; background-color: red; color: white; border-radius: 50%; padding: 0.2em 0.5em; font-size: 12px; display: none;">0</span>
+        </div>
+        <a href="login.html">
+            <img id="menu-icon" src="img/sair.svg" alt="Sair" style="width: 18px; height: 18px;">
+        </a>
+        <div id="menu-links" style="display: none;">
+            <a href="login.html">Sair</a>
+        </div>
+    </nav>
+
+    <div id="notificacao-modal"></div>
+
+    <div class="tabela-container">
+        <div id="contador-pendentes">
+            <h2 class="tarefas-pc">Tarefas Pendentes: <span id="quantidade-pendentes">0</span></h2>
+            <input type="text" id="filtro-pendentes" placeholder="Filtrar tarefas pendentes..." oninput="filtrarTarefasPendentes()">
+        </div>
+        <table id="tabela-pendentes">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Descrição</th>
+                    <th>Resp.</th>
+                    <th>Criado por</th>
+                    <th>Data de Criação</th>
+                    <th>Status</th>
+                    <th>Prioridade</th>
+                    <th class="acao">Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        
+        <div class="divider"></div>
+        
+        <div id="contador-vencidas">
+            <h2 class="tarefas-pc">Tarefas Vencidas: <span id="quantidade-vencidas">0</span></h2>
+            <input type="text" id="filtro-vencidas" placeholder="Filtrar tarefas vencidas..." oninput="filtrarTarefasVencidas()">
+        </div>
+        <table id="tabela-vencidas">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Descrição</th>
+                    <th>Resp.</th>
+                    <th>Criado por</th>
+                    <th>Data de Criação</th>
+                    <th>Data de Vencimento</th>
+                    <th>Status</th>
+                    <th>Prioridade</th>
+                    <th class="acao">Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <div class="divider"></div>
+
+        <div id="contador-paradas">
+            <h2 class="tarefas-pc">Tarefas Paradas: <span id="quantidade-parado">0</span></h2>
+            <input type="text" id="filtro-paradas" placeholder="Filtrar tarefas paradas..." oninput="filtrarTarefasParadas()">
+        </div>
+        <table id="tabela-paradas">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Descrição</th>
+                    <th>Resp.</th>
+                    <th>Criado por</th>
+                    <th>Data de Criação</th>
+                    <th>Status</th>
+                    <th>Prioridade</th>
+                    <th class="acao">Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <div class="divider"></div>
+
+        <div id="contador-concluidas">
+            <h2 class="tarefas-pc">Tarefas Concluídas: <span id="quantidade-concluidas">0</span></h2>
+            <input type="text" id="filtro-concluidas" placeholder="Filtrar tarefas concluídas..." oninput="filtrarTarefasConcluidas()">
+        </div>
+        <table id="tabela-concluidas">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Descrição</th>
+                    <th>Resp.</th>
+                    <th>Criado por</th>
+                    <th>Data de Criação</th>
+                    <th>Status</th>
+                    <th>Prioridade</th>
+                    <th class="acao">Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="notificacao-modal" style="display: none; position: absolute; top: 40px; right: 0; background-color: white; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); border-radius: 5px; padding: 10px; width: 250px;">
+        <ul id="notificacao-lista" style="list-style: none; margin: 0; padding: 0;">
+        </ul>
+    </div>
+
+    <script>
+        const socket = io();
+
+socket.on('evento', function(data) {
+    console.log(data);
+});
+
+async function carregarTarefas() {
+    const nomeUsuario = sessionStorage.getItem('nomeUsuario');
+    console.log('Nome do Usuário:', nomeUsuario);  // Verifique o nome do usuário aqui
+
+    if (!nomeUsuario) {
+        console.error('Usuário não logado ou nome de usuário não encontrado na sessão.');
+        return;
+    }
+
+    const response = await fetch('/tarefas');
+    if (!response.ok) {
+        console.error('Erro ao buscar tarefas:', response.statusText);
+        return;
+    }
+
+    const tarefas = await response.json();
+    console.log('Tarefas recebidas:', tarefas);  // Verifique a lista de tarefas
+
+    // Filtro de tarefas para o responsável correto
+    const tarefasResponsavel = tarefas.filter(tarefa => {
+        if (typeof tarefa.responsavel === 'string' && nomeUsuario) {
+            return tarefa.responsavel.trim().toLowerCase() === nomeUsuario.trim().toLowerCase();
+        }
+        return false;
+    });
+
+    console.log('Tarefas filtradas para o responsável:', tarefasResponsavel);  // Verifique as tarefas filtradas
+
+    tarefasResponsavel.sort((a, b) => new Date(a.criadoEm) - new Date(b.criadoEm));
+
+    // Verifique se os elementos existem antes de manipular
+    const tbodyPendentes = document.querySelector('#tabela-pendentes tbody');
+    const tbodyConcluidas = document.querySelector('#tabela-concluidas tbody');
+    const tbodyVencidas = document.querySelector('#tabela-vencidas tbody');
+    const tbodyParadas = document.querySelector('#tabela-paradas tbody');
+
+    if (!tbodyPendentes || !tbodyConcluidas || !tbodyVencidas || !tbodyParadas) {
+        console.error('Não foi possível encontrar os elementos tbody das tabelas');
+        return;
+    }
+
+    tbodyPendentes.innerHTML = '';  // Limpar conteúdo
+    tbodyConcluidas.innerHTML = '';
+    tbodyVencidas.innerHTML = '';
+    tbodyParadas.innerHTML = '';
+
+    let pendentesCount = 0;
+    let concluidasCount = 0;
+    let vencidasCount = 0;
+    let paradasCount = 0;
+
+    tarefasResponsavel.forEach(tarefa => {
+        const row = document.createElement('tr');
+        let statusClass = '';
+        let prioridadeClass = '';
+        const dataCriacao = new Date(tarefa.criadoEm).toLocaleString('pt-BR');
+        const dataLimite = new Date(tarefa.prazoFinal);
+        const dataAtual = new Date();
+        const tarefaVencida = dataLimite < dataAtual && tarefa.status !== 'Concluída';
+        const statusTarefa = tarefa.status.toLowerCase().trim();
+
+        if (statusTarefa === 'parado') {
+            const rowParada = document.createElement('tr');
+            prioridadeClass = getPrioridadeClass(tarefa.prioridade);
+            rowParada.innerHTML = `
+                <td>${tarefa.numero}</td>
+                <td>${tarefa.titulo}</td>
+                <td>${tarefa.descricao}</td>
+                <td>${tarefa.responsavel}</td>
+                <td>${tarefa.criadoPor}</td>
+                <td>${dataCriacao}</td>
+                <td class="status-parada">${tarefa.status}</td>
+                <td class="${prioridadeClass}">${tarefa.prioridade}</td>
+                <td class="acaoDlt">
+                    <button class="btn-delete" onclick="excluirTarefa('${tarefa._id}')">
+                        <img src="img/excluir.png" alt="Excluir" style="width: 12px; height: 12px;" />
+                    </button>
+                </td>
+            `;
+            tbodyParadas.appendChild(rowParada);
+            paradasCount++;
+        }
+
+        if (tarefa.status === 'Pendente' || tarefa.status === 'Em Andamento') {
+            statusClass = tarefa.status === 'Pendente' ? 'status-pendente' : 'status-andamento';
+            prioridadeClass = getPrioridadeClass(tarefa.prioridade);
+            row.innerHTML = `
+               <td>${tarefa.numero}</td>
+               <td>${tarefa.titulo}</td>
+               <td>${tarefa.descricao}</td>
+               <td>${tarefa.responsavel}</td>
+               <td>${tarefa.criadoPor}</td>
+               <td>${dataCriacao}</td>
+               <td class="${statusClass}">${tarefa.status}</td>
+               <td class="${prioridadeClass}">${tarefa.prioridade}</td>
+               <td class="acao">
+                   <button class="btnMover" onclick="moverTarefa('${tarefa._id}', 'Pendente')">
+                   <img src="img/btnPendente.png" alt="Pendente" class="icon-move">
+                   </button>
+                   <button class="btnMover" onclick="moverTarefa('${tarefa._id}', 'Em Andamento')">
+                   <img src="img/btnAndamento.png" alt="Em Andamento" class="icon-move">
+                   </button>
+                   <button class="btnConcluir" onclick="concluirTarefa('${tarefa._id}')">
+                   <img src="img/btnCheck.png" alt="Concluir" class="icon-check">
+                   </button>
+                   <button class="btnDelete" onclick="excluirTarefa('${tarefa._id}')">
+                   <img src="img/btnDelete.png" alt="Excluir" class="icon-delete">
+                   </button>
+               </td>
+            `;
+            tbodyPendentes.appendChild(row);
+            pendentesCount++;
+        }
+
+        if (tarefa.status === 'Concluída') {
+            const rowConcluida = document.createElement('tr');
+            prioridadeClass = getPrioridadeClass(tarefa.prioridade);
+            rowConcluida.innerHTML = `
+                <td>${tarefa.numero}</td>
+                <td>${tarefa.titulo}</td>
+                <td>${tarefa.descricao}</td>
+                <td>${tarefa.responsavel}</td>
+                <td>${tarefa.criadoPor}</td>
+                <td>${dataCriacao}</td>
+                <td class="status-concluida">${tarefa.status}</td>
+                <td class="${prioridadeClass}">${tarefa.prioridade}</td>
+                <td class="acaoDlt">
+                    <button class="btn-delete" onclick="excluirTarefa('${tarefa._id}')">
+                        <img src="img/btnDelete.png" alt="Excluir"/>
+                    </button>
+                </td>
+            `;
+            tbodyConcluidas.appendChild(rowConcluida);
+            concluidasCount++;
+        }
+
+        if (tarefaVencida && tarefa.status !== 'Concluída') {
+            const rowVencida = document.createElement('tr');
+            rowVencida.innerHTML = `
+                <td>${tarefa.numero}</td>
+                <td>${tarefa.titulo}</td>
+                <td>${tarefa.descricao}</td>
+                <td>${tarefa.responsavel}</td>
+                <td>${tarefa.criadoPor}</td>
+                <td>${dataCriacao}</td>
+                <td class="status-vencida">${tarefa.status}</td>
+                <td class="status-vencida">${tarefa.prioridade}</td>
+                <td class="acaoDlt">
+                    <button class="btn-delete" onclick="excluirTarefa('${tarefa._id}')">
+                        <img src="img/excluir.png" alt="Excluir" style="width: 12px; height: 12px;" />
+                    </button>
+                </td>
+            `;
+            tbodyVencidas.appendChild(rowVencida);
+            vencidasCount++;
+        }
+    });
+
+    // Atualizando os contadores de tarefas
+    atualizarContadores(pendentesCount, concluidasCount, vencidasCount, paradasCount);
+}
+
+function atualizarContadores(pendentes, concluidas, vencidas, paradas) {
+    document.querySelector('#quantidade-pendentes').textContent = pendentes;
+    document.querySelector('#quantidade-concluidas').textContent = concluidas;
+    document.querySelector('#quantidade-vencidas').textContent = vencidas;
+    document.querySelector('#quantidade-parado').textContent = paradas;
+}
+
+
+function getPrioridadeClass(prioridade) {
+    switch (prioridade) {
+        case 'Alta':
+            return 'prioridade-alta';
+        case 'Média':
+            return 'prioridade-media';
+        case 'Baixa':
+            return 'prioridade-baixa';
+        default:
+            return '';
+    }
+}
+
+async function concluirTarefa(id) {
+    await fetch(`/tarefas/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: 'Concluída' })
+    });
+    carregarTarefas();
+}
+
+async function moverTarefa(id, novoStatus) {
+    await fetch(`/tarefas/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: novoStatus })
+    });
+    carregarTarefas();
+}
+
+async function excluirTarefa(id) {
+    const confirmacao = confirm('Tem certeza que deseja excluir esta tarefa?');
+    if (confirmacao) {
+        await fetch(`/tarefas/${id}`, {
+            method: 'DELETE'
+        });
+        carregarTarefas();
+    }
+}
+
+function filtrarTarefasPendentes() {
+    const filtro = document.getElementById('filtro-pendentes').value.toLowerCase();
+    const rows = document.querySelectorAll('#tabela-pendentes tbody tr');
+
+    rows.forEach(row => {
+        const id = row.cells[0].textContent.toLowerCase();
+        const titulo = row.cells[1].textContent.toLowerCase();
+        const descricao = row.cells[2].textContent.toLowerCase();
+        const responsavel = row.cells[3].textContent.toLowerCase();
+        const criadoPor = row.cells[4].textContent.toLowerCase();
+
+        if (id.includes(filtro) || titulo.includes(filtro) || descricao.includes(filtro) || responsavel.includes(filtro) || criadoPor.includes(filtro)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function filtrarTarefasConcluidas() {
+    const filtro = document.getElementById('filtro-concluidas').value.toLowerCase();
+    const rows = document.querySelectorAll('#tabela-concluidas tbody tr');
+
+    rows.forEach(row => {
+        const id = row.cells[0].textContent.toLowerCase();
+        const titulo = row.cells[1].textContent.toLowerCase();
+        const descricao = row.cells[2].textContent.toLowerCase();
+        const responsavel = row.cells[3].textContent.toLowerCase();
+        const criadoPor = row.cells[4].textContent.toLowerCase();
+
+        if (id.includes(filtro) || titulo.includes(filtro) || descricao.includes(filtro) || responsavel.includes(filtro) || criadoPor.includes(filtro)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function filtrarTarefasVencidas() {
+    const filtro = document.getElementById('filtro-vencidas').value.toLowerCase();
+    const rows = document.querySelectorAll('#tabela-vencidas tbody tr');
+
+    rows.forEach(row => {
+        const id = row.cells[0].textContent.toLowerCase();
+        const titulo = row.cells[1].textContent.toLowerCase();
+        const descricao = row.cells[2].textContent.toLowerCase();
+        const responsavel = row.cells[3].textContent.toLowerCase();
+        const criadoPor = row.cells[4].textContent.toLowerCase();
+
+        if (id.includes(filtro) || titulo.includes(filtro) || descricao.includes(filtro) || responsavel.includes(filtro) || criadoPor.includes(filtro)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+socket.on('novaTarefa', carregarTarefas);
+socket.on('atualizarTarefa', carregarTarefas);
+socket.on('excluirTarefa', carregarTarefas);
+
+document.addEventListener('DOMContentLoaded', carregarTarefas);
+
+function toggleMenu() {
+    const menuLinks = document.getElementById('menu-links');
+    const isMenuOpen = menuLinks.style.display === 'block';
+    menuLinks.style.display = isMenuOpen ? 'none' : 'block';
+    menuLinks.style.transition = '0.3s';
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+    verificarLogin();
+});
+
+    </script>
+        <script src="notificacoes.js"></script>
+        
+</body>
+</html>
